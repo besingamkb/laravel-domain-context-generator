@@ -1,9 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-
-const EXT_NAME: string = "laravel-domain-context-generator";
-const EXT_PREFFIX: string = `${EXT_NAME}.`;
+import { EXT_NAME, EXT_PREFFIX } from './utils/constants';
+import { DomainContextGeneratorProviders } from './services/domainContextGeneratorProvider';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -25,7 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage('Hello World from Laravel Domain Context Generator!');
 	});
 
-	let generateDomainContext = vscode.commands.registerCommand(`${EXT_PREFFIX}domainContext`, async () => {
+	let generateDomainContext = vscode.commands.registerCommand(`${EXT_PREFFIX}domainContext12312`, async () => {
 
 		try {
 			const result = await vscode.window.showInputBox({
@@ -60,7 +59,9 @@ export function activate(context: vscode.ExtensionContext) {
 		quickPick.show();
 	});
 
-	context.subscriptions.push(generateDomainContext);
+	// context.subscriptions.push(generateDomainContext);
+	const domainContextGeneratorProviders = new DomainContextGeneratorProviders(context);
+	domainContextGeneratorProviders.boot();
 }
 
 // This method is called when your extension is deactivated
