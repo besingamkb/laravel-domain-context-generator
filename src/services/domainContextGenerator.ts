@@ -19,7 +19,7 @@ export const getDomainContext = async (): Promise<string> => {
     }
 }
 
-export const domainContextGenerator = async (extContext: ExtensionContext) => {
+export const domainContextGenerator = async (baseExtPath: string) => {
     const domainContext = await getDomainContext();
     logify.log(`Domain Context: ${domainContext}`);
 
@@ -43,7 +43,7 @@ export const domainContextGenerator = async (extContext: ExtensionContext) => {
                 }
 
                 logify.log("Creating laravel model...");
-                createLaravelModel(extContext, domainContext, contextPath);
+                createLaravelModel(baseExtPath, domainContext, contextPath);
             }
             
         }
@@ -52,36 +52,28 @@ export const domainContextGenerator = async (extContext: ExtensionContext) => {
     }
 }
 
-export const createLaravelModel = (extContext: ExtensionContext, context: string, contextPath: string) => {
+export const createLaravelModel = (baseExtPath: string, context: string, contextPath: string) => {
     const contextToUpperCase = capitalizeString(context);
-    const newModelFile = path.join(contextPath, context + ".php");
-    const extPath = extContext.extensionPath;
+    const contextModelPath = path.join(contextPath, "Models");
+    const newModelFile = path.join(contextModelPath, context + ".php");
 
     try {
-        logify.log(extPath);
-        const extAbsPath = extContext.asAbsolutePath('src/stub/laravel-model.stub');
-        logify.log("extAbsPath: ", extAbsPath)
-        const data = fs.readFileSync(extAbsPath, 'utf8');
+        if (!fs.existsSync(contextModelPath)) {
+            fs.mkdirSync(contextModelPath);
+        }
+        logify.log(baseExtPath);
+        
+        console.log(`inside domain context generator: ${baseExtPath}`);
+        const laravelModelSubPath = path.join(baseExtPath,'src/stubs/laravel-model.stub');
+        logify.log("laravelModelSubPath: ", laravelModelSubPath);
+
+        const data = fs.readFileSync(laravelModelSubPath, 'utf8');
         logify.log(data);
-        const newContent = data.replace('{{ namespace }}', `App\\${contextToUpperCase}\\Models`);
-        newContent.replace('{{ class }}', contextToUpperCase);
+
+        const newContent = data.replace('{{ namespace }}', `App\\${contextToUpperCase}\\Models`).replace('{{ class }}', contextToUpperCase);
         logify.log(newContent);
         fs.writeFileSync(newModelFile, newContent);
       } catch (err: any) {
         logify.error(err);
       }
-    // const contextToUpperCase = context.toUpperCase();
-    // const newModelFile = path.join(contextPath, context + ".php");
-    // fs.readFile('stub/laravel-model.stub', 'utf8', (err, stubData) => {
-    //     if (err) throw err;
-    
-    //     const newContent = stubData.replace('{{ namespace }}', `App\\${contextToUpperCase}\\Models`);
-    //     newContent.replace('{{ class }}', contextToUpperCase);
-    
-
-    //     fs.writeFile(newModelFile, newContent, (err) => {
-    //         if (err) throw err;
-    //         console.log('New file created successfully!');
-    //     });
-    // });
 }
